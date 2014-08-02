@@ -8,6 +8,7 @@ package com.croer.javalog;
 import com.croer.db.search.repositories.ProductoLogRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +47,9 @@ public class Borris3 {
     
     @Resource(name="model.repositories")
     private List p;
+    
+    @Autowired
+    private Properties databaseConfig;
 
     public String getPathFile() {
         return pathFile + ":::" + buvts;
@@ -60,4 +64,7 @@ public class Borris3 {
         return p + "--" + ++nomas + ":::" + javaVersionMap + ":::" + javaVersionMap2 + ":::" + classpath + "::k:" + metis;
     }
 
+    Properties getPropertos() {
+        return databaseConfig;
+    }
 }

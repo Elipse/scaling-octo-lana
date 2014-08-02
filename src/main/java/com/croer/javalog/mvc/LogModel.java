@@ -12,7 +12,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,32 +29,57 @@ import util.PausableScheduledThreadPoolExecutor;
  */
 class LogModel implements PropertyChangeListener {
 
+    //No es final "alguien" puede hacerlo apuntar a otro lado
+    //No es unmodifiable "alguien" puede eliminar o cambiar elementos
+    //No es sync "alguien" puede causar inconsistencias - IndexOutBounds
+    //
+    //Es una API pública? resuélvelo
+    //La funcionalidad contempla esos casos? resuélvelo
+    //NO??? relájateeeeee
+    private volatile List<JpaRepository> repositoriesList;
+    private final int delay;
+    //
     private boolean begin;
     private final PausableScheduledThreadPoolExecutor executor;
     private final ExtractTask extracTask;
     private final WriteLogTask writeLogTask;
-    private final PropertyChangeSupport pcs;
-    //
+    private volatile PropertyChangeSupport pcs;
     private volatile Thread writer;
+    //
+    private volatile boolean logGenerated;
+    private volatile String pathLogFile;
+    private volatile int maxSize;
+    //
+    private volatile FireProperty fireCount;
 
-    LogModel(List<JpaRepository> repositoriesList, String pathLogFile, int maxSize) {
+    LogModel(List<JpaRepository> repositoriesList) {
+        this(repositoriesList, 2);
+    }
+
+    LogModel(List<JpaRepository> repositoriesList, int delay) {
+        this.repositoriesList = repositoriesList;
+        this.delay = delay;
+        //
+        this.logGenerated = true;
+        this.pathLogFile = System.getProperty("user.dir") + "\\wordsLog";
+        this.maxSize = 1024 * 1024;
+        //
         begin = true;
         //
         executor = new PausableScheduledThreadPoolExecutor(1);
         //Producer & Consumer Configuration
         LinkedBlockingDeque<Map> mapList = new LinkedBlockingDeque<>();
-        repositoriesList = Collections.unmodifiableList(repositoriesList);
-        extracTask = new ExtractTask(mapList, repositoriesList);
-        writeLogTask = new WriteLogTask(mapList, new File(pathLogFile), maxSize);
+        extracTask = new ExtractTask(mapList);
+        writeLogTask = new WriteLogTask(mapList);
+        fireCount = new FireProperty();
         //
-        pcs = new PropertyChangeSupport(this);
+        pcs = new PropertyChangeSupport(this);  //eureka!! Si tu lo cambias y yo lo utilizo  = volatile
     }
 
     public void on() {  //Depende que initialize se haya disparado
-
         if (begin) {
             begin = false;
-            executor.scheduleWithFixedDelay(extracTask, 1, 1, TimeUnit.MILLISECONDS);
+            executor.scheduleWithFixedDelay(extracTask, 1, delay, TimeUnit.MILLISECONDS);
             //
             writer = new Thread(writeLogTask);
             writer.setDaemon(true);
@@ -67,6 +91,26 @@ class LogModel implements PropertyChangeListener {
 
     public void off() { //Depende que on se haya disparado
         executor.pause();
+    }
+
+    public void quit() {
+        executor.shutdown();
+        //
+        Thread moribund = writer;
+        writer = null;
+        moribund.interrupt();
+    }
+
+    public void setLogGenerated(boolean logGenerated) {
+        this.logGenerated = logGenerated;
+    }
+
+    public void setPathLogFile(String pathLogFile) {
+        this.pathLogFile = pathLogFile;
+    }
+
+    public void setMaxSize(int maxSize) {
+        this.maxSize = maxSize;
     }
 
     @Override
@@ -82,29 +126,25 @@ class LogModel implements PropertyChangeListener {
         this.pcs.removePropertyChangeListener(listener);
     }
 
-    public void quit() {
-        executor.shutdown();
-        //
-        Thread moribund = writer;
-        writer = null;
-        moribund.interrupt();
+    /**
+     * @return the logGenerated
+     */
+    public boolean isLogGenerated() {
+        return logGenerated;
     }
 
     private class ExtractTask implements Runnable {
 
         private final LinkedBlockingDeque mapList;
-        private final List<JpaRepository> repositoriesList;
 
-        ExtractTask(LinkedBlockingDeque<Map> mapList, List<JpaRepository> repositoriesList) {
+        ExtractTask(LinkedBlockingDeque<Map> mapList) {
             this.mapList = mapList;
-            this.repositoriesList = repositoriesList;
         }
 
         @Override
         public void run() {
             try {
-                Map<String, Integer> statics = LogMProcess.processLogs(repositoriesList);
-
+                Map<String, Integer> statics = LogMProcess.processLogs(LogModel.this.repositoriesList);
                 mapList.add(statics);
 
                 Integer count = 0;
@@ -112,7 +152,8 @@ class LogModel implements PropertyChangeListener {
                     count += entry.getValue();
                 }
 
-                EventQueue.invokeLater(new FireProperty(count));  //Se genera en cada llamado. GC lo colecta sin problemas.
+                fireCount.setCount(count);
+                EventQueue.invokeLater(fireCount);  //Se genera en cada llamado. GC lo colecta sin problemas.
             } catch (Exception ex) {
                 Logger.getLogger(LogModel.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -122,43 +163,49 @@ class LogModel implements PropertyChangeListener {
     private class FireProperty implements Runnable {
 
         //volatile podría no ser necesario?!
-        private volatile Integer count;
-
-        FireProperty(Integer count) {
-            this.count = count;
-        }
+        //Usar un setter para tener solo un objeto FireProperty
+        private volatile Integer count = 0;
 
         @Override
         public void run() {
             LogModel.this.pcs.firePropertyChange("logCount", null, count);
+        }
+
+        /**
+         * @param count the count to set
+         */
+        public void setCount(Integer count) {
+            System.out.println("this " + this.count + ":" + count);
+            this.count += count;
         }
     }
 
     private class WriteLogTask implements Runnable {
 
         private final LinkedBlockingDeque<Map> mapList;
-        private final File file;  //Se asume que solo un thread usa WriteLogTask
-        private final int maxSize;
 
-        WriteLogTask(LinkedBlockingDeque<Map> mapList, File file, int maxSize) {
+        WriteLogTask(LinkedBlockingDeque<Map> mapList) {
             this.mapList = mapList;
-            this.file = file;
-            this.maxSize = maxSize;
         }
 
         @Override
         public void run() {
             Thread thisThread = Thread.currentThread();
-            while (writer == thisThread) {
+            while (LogModel.this.writer == thisThread) {
                 try {
                     Map map = mapList.take();
                     try {
-                        //Create log
-                        FileUtils.writeLines(file, Arrays.asList(">" + new Date()), true);
-                        FileUtils.writeLines(file, map.entrySet(), true);
-                        if (file.length() > maxSize) {
-                            File tmp = new File(file.getAbsolutePath() + "." + System.currentTimeMillis());
-                            FileUtils.moveFile(file, tmp);
+                        if (LogModel.this.isLogGenerated()) {
+                            //Create log
+                            File file = new File(LogModel.this.pathLogFile);
+                            FileUtils.writeLines(file, Arrays.asList(">" + new Date()), true);
+                            FileUtils.writeLines(file, map.entrySet(), true);
+                            if (file.length() > LogModel.this.maxSize) {
+                                File tmp = new File(file.getAbsolutePath() + "." + System.currentTimeMillis());
+                                FileUtils.moveFile(file, tmp);
+                            }
+                        } else {
+                            System.out.println("Burpis");
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(LogView.class.getName()).log(Level.SEVERE, null, ex);

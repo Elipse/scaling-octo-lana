@@ -100,17 +100,56 @@
             
             
             
-    <bean id="model" class="com.croer.javalog.mvc.LogModel">    
+    <!--bean id="model" class="com.croer.javalog.mvc.LogModel" init-method="init">    
         <constructor-arg value="${logPath}"/>
         <constructor-arg ref="model.repositories"/>
         <constructor-arg value="30000"/>        
+    </bean-->
+    
+    <bean id="model" class="com.croer.javalog.mvc.LogModel">
+        <constructor-arg ref="model.repositories" />
+        <property name="maxSize" value="${model.maxSize}" />
+        <property name="pathLogFile" value="${logPath}"/>
     </bean>
     
-    <bean id="controller1" class="com.croer.javalog.mvc.LogController" init-method="turnOnLights">    
+    <bean id="view" class="com.croer.javalog.mvc.LogView">    
+    </bean>
+    
+    <bean id="controller" class="com.croer.javalog.mvc.LogController" init-method="init">    
+    </bean>
+    
+    <bean id="mProcess" class="com.croer.javalog.mvc.LogMProcess">    
+    </bean>
+    
+    <bean id="borriscuatro" class="com.croer.javalog.Borris4" >    
+        <property name="propUno" value="Meche"/>
+    </bean>
+    
+    
+    <!--bean id="controller1" class="com.croer.javalog.mvc.LogController" init-method="turnOnLights">    
         <constructor-arg ref="model"/>
-    </bean> 
+    </bean--> 
+    <bean id="buildProperties" class="org.apache.commons.configuration.PropertiesConfiguration">
+        <constructor-arg index="0">
+            <value>mvc.properties</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="compositeProperties" class="org.apache.commons.configuration.CompositeConfiguration">
+        <constructor-arg index="0">
+            <!-- The order that these beans are defined is important when properties are defined in multiple Configurations -->
+            <list>
+                <ref bean="buildProperties"/>
+            </list>
+        </constructor-arg>
+    </bean>
+    
+    <util:properties id="databaseConfig" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\databaseConfig.properties"/>
 
     <util:properties id="mvc" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\mvc.properties"/>    
+    <bean id="configurationProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties" ref="mvc"/>
+    </bean>
     <util:list id="model.repositories" value-type="org.springframework.data.jpa.repository.JpaRepository"> 
         <ref bean = "productoLogRepository" />
     </util:list> 

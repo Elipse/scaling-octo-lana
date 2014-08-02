@@ -10,7 +10,8 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -18,11 +19,30 @@ import org.springframework.beans.factory.annotation.Value;
  */
 class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
-    private final LogModel model;
-    private final LogController controller;
+    @Autowired
+    private CompositeConfiguration CONFIGURATION;
     //
-    @Value("#{mvc.resume}")
-    private static String RESUME;
+    private LogModel model;
+
+    public void setModel(LogModel model) {
+        if (this.model != null) {
+            return;
+        }
+        this.model = model;
+    }
+    private LogController controller;
+
+    public void setController(LogController controller) {
+        this.controller = controller;
+    }
+    //
+
+    LogView() {
+        nimbus();
+        initComponents();
+        this.model = null;
+        this.controller = null;
+    }
 
     /**
      * Creates new form LogProcess
@@ -41,9 +61,12 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        if (CONFIGURATION != null) {
+            System.out.println("CompositeConfiguration " + CONFIGURATION.getString("resume"));
+        }
         switch (evt.getPropertyName()) {
             case "logCount":
-                System.out.println("Resume " + RESUME);
+
                 //Process statics map
                 Integer count = (Integer) evt.getNewValue();
                 if (count == null) {
@@ -110,6 +133,7 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
 
@@ -140,7 +164,7 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
         jMenu1.setText("File");
 
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, 0));
         jMenuItem1.setText("Quit");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -148,6 +172,16 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
             }
         });
         jMenu1.add(jMenuItem1);
+
+        jCheckBoxMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F12, 0));
+        jCheckBoxMenuItem1.setSelected(true);
+        jCheckBoxMenuItem1.setText("Log Generated");
+        jCheckBoxMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jCheckBoxMenuItem1);
 
         jMenuBar1.add(jMenu1);
 
@@ -232,8 +266,14 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
+    private void jCheckBoxMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        controller.toggleLogGenerated();
+    }//GEN-LAST:event_jCheckBoxMenuItem1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

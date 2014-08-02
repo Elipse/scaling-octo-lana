@@ -6,6 +6,9 @@
 package com.croer.javalog;
 
 import com.croer.db.search.repositories.AlineacionRepository;
+import java.util.Iterator;
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -23,6 +26,13 @@ public class Borris2 {
         Borris3 bean = context.getBean(Borris3.class);
         System.out.println("Yep " + bean.getPathFile() + ":" + bean.getVer());
         System.out.println("Emilios " + bean.misEmilios());
+        System.out.println("Ops " + bean.getPropertos());
+        PropertiesConfiguration bean1 = context.getBean("buildProperties", PropertiesConfiguration.class);
+        System.out.println("Porks " + bean1.getString("yahel"));
+        CompositeConfiguration bean3 = context.getBean(CompositeConfiguration.class);
+        System.out.println("Multiple " + bean3.getString("maxy"));
+        Borris4 bean4 = context.getBean(Borris4.class);
+        System.out.println("Beno4 " + bean4);
         //AlineacionRepository bean = context.getBean("alineacionRepository", AlineacionRepository.class);
         //System.out.println("Beno " + bean);
     }

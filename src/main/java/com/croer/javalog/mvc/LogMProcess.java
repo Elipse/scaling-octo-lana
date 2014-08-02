@@ -5,8 +5,6 @@ package com.croer.javalog.mvc;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-
 import com.croer.db.search.services.DBService;
 import com.croer.db.business.entities.ProductoLog;
 import com.croer.db.search.entities.Alineacion;
@@ -28,13 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,13 +45,20 @@ import util.Utilities;
 public class LogMProcess {
 
     private static final Properties properties;
-    private static final FileSystemXmlApplicationContext appContext;
     @Autowired
-    private DBService searchController;
+    private static CompositeConfiguration CONFIGURATION;
+    @Autowired
+    private static DBService dbService;
+
+    @Autowired(required = true)
+    private LogMProcess(DBService dbService, CompositeConfiguration cc) {
+        LogMProcess.dbService = dbService;
+        LogMProcess.CONFIGURATION = cc;
+        System.out.println("debesos " + dbService + ":" + cc);
+    }
 
     static {
         String user_dir = System.getProperty("user.dir");
-        appContext = new FileSystemXmlApplicationContext(user_dir + "\\target\\classes\\springXMLConfig.xml");
         properties = new Properties();
         try {
             String fileProps = user_dir + "\\target\\classes\\entityStruc.properties";
@@ -65,7 +69,6 @@ public class LogMProcess {
         } catch (IOException ex) {
             Logger.getLogger(LogMProcess.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     private static List<String> generatePropList(Object bean, String suffix) {
@@ -106,7 +109,7 @@ public class LogMProcess {
         return itembusq;
     }
 
-    public static Map<String, Integer>  processLogs(List<JpaRepository> repoList) {
+    public static Map<String, Integer> processLogs(List<JpaRepository> repoList) {
         System.out.println("Proxx " + repoList);
         Map<String, Integer> map = new HashMap();
         for (JpaRepository name : repoList) {
@@ -128,8 +131,7 @@ public class LogMProcess {
         for (Object object : findAll) {
             process(object);
         }
-        
-        
+
         //repository.delete(findAll); //hace el borrado de simigrama pero no de producto por ejemplo. si no procesa no puede borrar
         return findAll.size();
     }
@@ -175,10 +177,10 @@ public class LogMProcess {
         itembusq.setItemOrtogramaList(itorList);
 
         //Record on DB
-        DBService sc = (DBService) appContext.getBean("DBService");
-        sc.saveContext(itembusq, ortoList, simiList, d);
-        DBService sc2 = (DBService) appContext.getBean("DBService");
-        System.out.println("sc " + sc + ":" + "sc2 " + sc2);
+//        DBService sc = (DBService) appContext.getBean("DBService");
+//        sc.saveContext(itembusq, ortoList, simiList, d);
+//        DBService sc2 = (DBService) appContext.getBean("DBService");
+//        System.out.println("sc " + sc + ":" + "sc2 " + sc2);
     }
 
     public static void main(String[] args) {
