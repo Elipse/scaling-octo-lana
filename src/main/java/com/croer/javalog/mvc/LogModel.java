@@ -11,6 +11,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -153,8 +154,8 @@ class LogModel implements PropertyChangeListener {
                 }
 
                 fireCount.setCount(count);
-                EventQueue.invokeLater(fireCount);  //Se genera en cada llamado. GC lo colecta sin problemas.
-            } catch (Exception ex) {
+                EventQueue.invokeAndWait(fireCount);  //Se genera en cada llamado. GC lo colecta sin problemas.
+            } catch (InterruptedException | InvocationTargetException ex) {
                 Logger.getLogger(LogModel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -175,8 +176,7 @@ class LogModel implements PropertyChangeListener {
          * @param count the count to set
          */
         public void setCount(Integer count) {
-            System.out.println("this " + this.count + ":" + count);
-            this.count += count;
+            this.count = count;
         }
     }
 
@@ -204,8 +204,6 @@ class LogModel implements PropertyChangeListener {
                                 File tmp = new File(file.getAbsolutePath() + "." + System.currentTimeMillis());
                                 FileUtils.moveFile(file, tmp);
                             }
-                        } else {
-                            System.out.println("Burpis");
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(LogView.class.getName()).log(Level.SEVERE, null, ex);

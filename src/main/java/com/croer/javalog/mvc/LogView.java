@@ -6,12 +6,15 @@
 package com.croer.javalog.mvc;
 
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -19,10 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
-    @Autowired
     private CompositeConfiguration CONFIGURATION;
     //
     private LogModel model;
+    private LogVSettings logVSettings;
 
     public void setModel(LogModel model) {
         if (this.model != null) {
@@ -40,8 +43,34 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
     LogView() {
         nimbus();
         initComponents();
+        //
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F2"), "newWindow");
+        getRootPane().getActionMap().put("newWindow", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Y me pregunto...las rocas se están desquebrajando???");
+                controller.showSettings();
+            }
+        });
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F9"), "toogle");
+        getRootPane().getActionMap().put("toogle", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.toggleProcess();
+            }
+        });
+        //
         this.model = null;
         this.controller = null;
+        //
+        logVSettings = new LogVSettings();
+        logVSettings.addPropertyChangeListener(LogView.this);
+    }
+
+    public void setConfiguration(CompositeConfiguration cc) {
+        this.CONFIGURATION = cc;
     }
 
     /**
@@ -50,17 +79,40 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
      * @param controller
      * @param model
      */
-    LogView(LogController controller, LogModel model) {
+    LogView(final LogController controller, LogModel model) {
         nimbus();
         initComponents();
+        //
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F9"), "toggleLog");
+        getRootPane().getActionMap().put("toggleLog", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String cmd = ((JButton) e.getSource()).getText();
+                switch (cmd) {
+                    case "Suspend":
+                        controller.stop();
+                        break;
+                    case "Resume":
+                        controller.start();
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+            }
+        });
         //
         this.controller = controller;
         this.model = model;
         this.model.addPropertyChangeListener(LogView.this);
+        //
+        logVSettings = new LogVSettings();
+        logVSettings.addPropertyChangeListener(LogView.this);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        System.out.println("evtop " + evt);
         if (CONFIGURATION != null) {
             System.out.println("CompositeConfiguration " + CONFIGURATION.getString("resume"));
         }
@@ -75,6 +127,7 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
                     return;
                 }
                 //Update labels' text
+                System.out.println("Godepo");
                 jLabel2.setText(count + "");
                 jLabel4.setText(Integer.valueOf(jLabel4.getText()) + count + "");
 
@@ -133,7 +186,6 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
-        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
 
@@ -172,16 +224,6 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
             }
         });
         jMenu1.add(jMenuItem1);
-
-        jCheckBoxMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F12, 0));
-        jCheckBoxMenuItem1.setSelected(true);
-        jCheckBoxMenuItem1.setText("Log Generated");
-        jCheckBoxMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBoxMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jCheckBoxMenuItem1);
 
         jMenuBar1.add(jMenu1);
 
@@ -226,7 +268,7 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(31, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2))
@@ -266,14 +308,8 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
-    private void jCheckBoxMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuItem1ActionPerformed
-        // TODO add your handling code here:
-        controller.toggleLogGenerated();
-    }//GEN-LAST:event_jCheckBoxMenuItem1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -285,4 +321,9 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     // End of variables declaration//GEN-END:variables
+
+    void showSettings() {
+        logVSettings.setLocationRelativeTo(null);
+        logVSettings.setVisible(true);
+    }
 }

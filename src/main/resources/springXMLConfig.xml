@@ -112,7 +112,15 @@
         <property name="pathLogFile" value="${logPath}"/>
     </bean>
     
-    <bean id="view" class="com.croer.javalog.mvc.LogView">    
+    <bean id="configuration" class="util.Configuration">
+        <constructor-arg ref="compositeProperties" />
+    </bean>
+    
+    <bean id="view" class="com.croer.javalog.mvc.LogView" depends-on="configuration">    
+        <property name="configuration" ref="compositeProperties" />
+    </bean>
+    
+    <bean id="viewSettings" class="com.croer.javalog.mvc.LogVSettings" depends-on="configuration">
     </bean>
     
     <bean id="controller" class="com.croer.javalog.mvc.LogController" init-method="init">    

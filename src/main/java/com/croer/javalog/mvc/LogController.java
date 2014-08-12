@@ -5,7 +5,6 @@
  */
 package com.croer.javalog.mvc;
 
-import java.beans.PropertyChangeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
@@ -19,6 +18,7 @@ public class LogController {
     private final LogModel model;
     @Autowired
     private final LogView view;
+    private boolean started = true;
 
     LogController() {
         System.out.println("Brotosaurio");
@@ -28,7 +28,6 @@ public class LogController {
 
     LogController(LogModel model) {
         System.out.println("Wopert " + this);
-
         this.model = model;
         this.view = new LogView(this, this.model);
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -47,6 +46,15 @@ public class LogController {
     public void start() {
         model.on();
         view.enableStopView();
+    }
+
+    public void toggleProcess() {
+        started = !started;
+        if (started) {
+            stop();
+        } else {
+            start();
+        }
     }
 
     public void stop() {
@@ -68,6 +76,7 @@ public class LogController {
             @Override
             public void run() {
                 System.out.println("Moquis " + Thread.currentThread());
+                view.setLocationRelativeTo(null);
                 view.setVisible(true);
             }
         });
@@ -82,6 +91,10 @@ public class LogController {
         LogController logController = appContext.getBean(LogController.class);
         System.out.println("PCS T# " + Thread.currentThread());
         logController.start();
+    }
+
+    void showSettings() {
+        view.showSettings();
     }
 
 }
