@@ -61,10 +61,6 @@ class LogModel implements PropertyChangeListener {
         this.repositoriesList = repositoriesList;
         this.delay = delay;
         //
-        this.logGenerated = true;
-        this.pathLogFile = System.getProperty("user.dir") + "\\wordsLog";
-        this.maxSize = 1024 * 1024;
-        //
         begin = true;
         //
         executor = new PausableScheduledThreadPoolExecutor(1);
@@ -106,12 +102,12 @@ class LogModel implements PropertyChangeListener {
         this.logGenerated = logGenerated;
     }
 
-    public void setPathLogFile(String pathLogFile) {
+    public void setLogPath(String pathLogFile) {
         this.pathLogFile = pathLogFile;
     }
 
     public void setMaxSize(int maxSize) {
-        this.maxSize = maxSize;
+        this.maxSize = maxSize * 1024;
     }
 
     @Override
@@ -125,13 +121,6 @@ class LogModel implements PropertyChangeListener {
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.removePropertyChangeListener(listener);
-    }
-
-    /**
-     * @return the logGenerated
-     */
-    public boolean isLogGenerated() {
-        return logGenerated;
     }
 
     private class ExtractTask implements Runnable {
@@ -195,7 +184,7 @@ class LogModel implements PropertyChangeListener {
                 try {
                     Map map = mapList.take();
                     try {
-                        if (LogModel.this.isLogGenerated()) {
+                        if (LogModel.this.logGenerated) {
                             //Create log
                             File file = new File(LogModel.this.pathLogFile);
                             FileUtils.writeLines(file, Arrays.asList(">" + new Date()), true);

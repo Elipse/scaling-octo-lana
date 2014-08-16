@@ -18,34 +18,15 @@ public class LogController {
     private final LogModel model;
     @Autowired
     private final LogView view;
-    private boolean started = true;
+    private boolean started;
 
     LogController() {
-        System.out.println("Brotosaurio");
         model = null;
         view = null;
     }
 
-    LogController(LogModel model) {
-        System.out.println("Wopert " + this);
-        this.model = model;
-        this.view = new LogView(this, this.model);
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Mocos " + Thread.currentThread());
-                view.setVisible(true);
-            }
-        });
-    }
-
-    void toggleLogGenerated() {
-        model.setLogGenerated(!model.isLogGenerated());
-    }
-
     public void start() {
         model.on();
-        view.enableStopView();
     }
 
     public void toggleProcess() {
@@ -59,7 +40,6 @@ public class LogController {
 
     public void stop() {
         model.off();
-        view.enableStartView();
     }
 
     public void quit() {
@@ -89,12 +69,23 @@ public class LogController {
         LogView view = appContext.getBean(LogView.class);
 //        LogController logController = new LogController(model);
         LogController logController = appContext.getBean(LogController.class);
-        System.out.println("PCS T# " + Thread.currentThread());
         logController.start();
     }
 
     void showSettings() {
         view.showSettings();
+    }
+
+    void toggleLog(boolean flag) {
+        model.setLogGenerated(flag);
+    }
+
+    void setMaxSize(int maxSize) {
+        model.setMaxSize(maxSize);
+    }
+
+    void setLogPath(String logPath) {
+        model.setLogPath(logPath);
     }
 
 }

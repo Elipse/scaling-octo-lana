@@ -11,10 +11,11 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.apache.commons.configuration.CompositeConfiguration;
+import util.Configuration;
+import util.Util;
 
 /**
  *
@@ -22,7 +23,7 @@ import org.apache.commons.configuration.CompositeConfiguration;
  */
 class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
-    private CompositeConfiguration CONFIGURATION;
+    private final CompositeConfiguration CONFIGURATION = Configuration.getCONFIGURATION();
     //
     private LogModel model;
     private LogVSettings logVSettings;
@@ -44,23 +45,16 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         nimbus();
         initComponents();
         //
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F2"), "newWindow");
-        getRootPane().getActionMap().put("newWindow", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Y me pregunto...las rocas se están desquebrajando???");
-                controller.showSettings();
-            }
-        });
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F9"), "toogle");
-        getRootPane().getActionMap().put("toogle", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controller.toggleProcess();
-            }
-        });
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "ESCAPE");
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F2");
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F3");
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F9");
+        //
+        String iconDir = CONFIGURATION.getString("icon.dir");
+        System.out.println("Nomep " + iconDir + CONFIGURATION.getString("icon.activate"));
+        jButton1.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.settings")));
+        jToggleButton1.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.deactivate")));
+        jToggleButton1.setSelectedIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.activate")));
         //
         this.model = null;
         this.controller = null;
@@ -69,80 +63,35 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         logVSettings.addPropertyChangeListener(LogView.this);
     }
 
-    public void setConfiguration(CompositeConfiguration cc) {
-        this.CONFIGURATION = cc;
-    }
-
-    /**
-     * Creates new form LogProcess
-     *
-     * @param controller
-     * @param model
-     */
-    LogView(final LogController controller, LogModel model) {
-        nimbus();
-        initComponents();
-        //
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F9"), "toggleLog");
-        getRootPane().getActionMap().put("toggleLog", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String cmd = ((JButton) e.getSource()).getText();
-                switch (cmd) {
-                    case "Suspend":
-                        controller.stop();
-                        break;
-                    case "Resume":
-                        controller.start();
-                        break;
-                    default:
-                        throw new AssertionError();
-                }
-            }
-        });
-        //
-        this.controller = controller;
-        this.model = model;
-        this.model.addPropertyChangeListener(LogView.this);
-        //
-        logVSettings = new LogVSettings();
-        logVSettings.addPropertyChangeListener(LogView.this);
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         System.out.println("evtop " + evt);
-        if (CONFIGURATION != null) {
-            System.out.println("CompositeConfiguration " + CONFIGURATION.getString("resume"));
-        }
+
         switch (evt.getPropertyName()) {
             case "logCount":
-
                 //Process statics map
                 Integer count = (Integer) evt.getNewValue();
                 if (count == null) {
                     jLabel5.setText("Conteo estadístico inexistente.");
-                    jButton1.setEnabled(false);
+                    jToggleButton1.setEnabled(false);
                     return;
                 }
                 //Update labels' text
-                System.out.println("Godepo");
                 jLabel2.setText(count + "");
                 jLabel4.setText(Integer.valueOf(jLabel4.getText()) + count + "");
-
+                break;
+            case "isLogGenerated":
+                controller.toggleLog((boolean) evt.getNewValue());
+                break;
+            case "maxSize":
+                controller.setMaxSize((int) evt.getNewValue());
+                break;
+            case "logPath":
+                controller.setLogPath((String) evt.getNewValue());
                 break;
             default:
                 break;
         }
-    }
-
-    void enableStartView() {
-        jButton1.setText("Resume");
-    }
-
-    void enableStopView() {
-        jButton1.setText("Suspend");
     }
 
     void quit() {
@@ -177,27 +126,18 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jToolBar1 = new javax.swing.JToolBar();
+        jButton1 = new javax.swing.JButton();
+        jToggleButton1 = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Procesamiento Bitácoras");
-
-        jButton1.setText("Suspend");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText("Parcial Registros Procesados:");
 
@@ -214,31 +154,18 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         jLabel5.setText("                      ");
         jLabel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        jMenu1.setText("File");
+        jToolBar1.setRollover(true);
 
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, 0));
-        jMenuItem1.setText("Quit");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
+        jButton1.setText("F2");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton1);
 
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setText("Edit");
-
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem2.setText("View Log");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem2);
-
-        jMenuBar1.add(jMenu2);
+        jToggleButton1.setText("F9");
+        jToggleButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jToggleButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jToggleButton1);
 
         setJMenuBar(jMenuBar1);
 
@@ -246,29 +173,27 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel3))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(31, Short.MAX_VALUE)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2))
@@ -277,36 +202,12 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4))
                 .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5))
+                .addComponent(jLabel5)
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        //
-        String cmd = ((JButton) evt.getSource()).getText();
-        switch (cmd) {
-            case "Suspend":
-                controller.stop();
-                break;
-            case "Resume":
-                controller.start();
-                break;
-            default:
-                throw new AssertionError();
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        controller.quit();
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
-
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
@@ -315,15 +216,37 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JToggleButton jToggleButton1;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 
     void showSettings() {
         logVSettings.setLocationRelativeTo(null);
         logVSettings.setVisible(true);
+    }
+
+    private class FormAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String functionKey = (String) getValue(Action.NAME);
+            switch (functionKey) {
+                case "ESCAPE":
+                    break;
+                case "F2":
+                    controller.showSettings();
+                    break;
+                case "F3":
+                    controller.quit();
+                    break;
+                case "F9":
+                    jToggleButton1.doClick();
+                    controller.toggleProcess();
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
     }
 }

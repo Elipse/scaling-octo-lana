@@ -108,8 +108,10 @@
     
     <bean id="model" class="com.croer.javalog.mvc.LogModel">
         <constructor-arg ref="model.repositories" />
-        <property name="maxSize" value="${model.maxSize}" />
-        <property name="pathLogFile" value="${logPath}"/>
+        <!--property name="maxSize" value="${model.maxSize}" /-->
+        <property name="logGenerated" value="${logGenerated}" />        
+        <property name="maxSize" value="${logMaxSize}" />
+        <property name="logPath" value="${logPath}"/>
     </bean>
     
     <bean id="configuration" class="util.Configuration">
@@ -117,7 +119,6 @@
     </bean>
     
     <bean id="view" class="com.croer.javalog.mvc.LogView" depends-on="configuration">    
-        <property name="configuration" ref="compositeProperties" />
     </bean>
     
     <bean id="viewSettings" class="com.croer.javalog.mvc.LogVSettings" depends-on="configuration">

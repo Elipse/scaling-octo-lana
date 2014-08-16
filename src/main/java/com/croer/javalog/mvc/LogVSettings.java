@@ -5,38 +5,35 @@
  */
 package com.croer.javalog.mvc;
 
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.KeyStroke;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
 import org.apache.commons.configuration.CompositeConfiguration;
 import util.Configuration;
 import util.JFileChooserXeam;
-import util.UtilDialog;
+import util.Util;
 
 /**
  *
  * @author elialva
  */
-public class LogVSettings extends javax.swing.JDialog implements Action {
+public class LogVSettings extends javax.swing.JDialog {
 
     private JFileChooserXeam fileChooser;
     private final CompositeConfiguration CONFIGURATION = Configuration.getCONFIGURATION();
-    private String logPath;
-    private final int fileSize;
+    private String oldLogPath;
+    private boolean oldIsSelected;
+    private int oldFileSize;
 
     /**
      * Creates new form LogVSettings
@@ -46,50 +43,25 @@ public class LogVSettings extends javax.swing.JDialog implements Action {
         super((Frame) null, true);
         initComponents();
         setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F9"), "toggleLog");
-        getRootPane().getActionMap().put("toggleLog", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                jCheckBox1.setSelected(!jCheckBox1.isSelected());
-            }
-        });
-
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F2"), "openFileChooser");
-        getRootPane().getActionMap().put("openFileChooser", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //
-                fileChooser = new JFileChooserXeam();
-                fileChooser.setSelectedFile(new File(logPath));
-                int returnVal = fileChooser.showOpenDialog(LogVSettings.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    System.out.println("You chose to open this file: "
-                            + fileChooser.getSelectedFile().getName());
-                    jTextArea1.setText(fileChooser.getCurrentDirectory() + "/" + fileChooser.getSelectedFile().getName());
-                    logPath = fileChooser.getSelectedFile().getAbsolutePath();
-                }
-            }
-        });
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F3"), "save&exit");
-        getRootPane().getActionMap().put("save&exit", LogVSettings.this);
-
+        //TODO Una factory & un mapa "Fn" vs "Command"
+        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "ESCAPE");
+        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F2");
+        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F3");
+        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F9");
+        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "W");
+        //
         String iconDir = CONFIGURATION.getString("icon.dir");
         jButton2.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.fileChooser")));
         jButton3.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.switch")));
-
-        logPath = CONFIGURATION.getString("logPath");
-//        jTextArea1.setEnabled(false);
-        jTextArea1.setText(logPath);
-
-        fileSize = CONFIGURATION.getInt("model.maxSize");
-        jSpinner1.setValue(fileSize);
+        //
+        jCheckBox1.setSelected(oldIsSelected = CONFIGURATION.getBoolean("logGenerated"));
+        //
+        jSpinner1.setValue(oldFileSize = CONFIGURATION.getInt("logMaxSize"));
+        //
+        jTextArea1.setText(oldLogPath = CONFIGURATION.getString("logPath"));
         //
         JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) jSpinner1.getEditor();
         editor.getTextField().grabFocus();
-
-        UtilDialog.installEscapeCloseOperation(LogVSettings.this);
     }
 
     /**
@@ -136,11 +108,6 @@ public class LogVSettings extends javax.swing.JDialog implements Action {
         jButton3.setMaximumSize(new java.awt.Dimension(32, 64));
         jButton3.setMinimumSize(new java.awt.Dimension(32, 64));
         jButton3.setPreferredSize(new java.awt.Dimension(32, 64));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
 
         jCheckBox1.setText("Generates log");
         jCheckBox1.setFocusable(false);
@@ -191,47 +158,6 @@ public class LogVSettings extends javax.swing.JDialog implements Action {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(LogVSettings.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                LogVSettings dialog = new LogVSettings();
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
@@ -243,20 +169,50 @@ public class LogVSettings extends javax.swing.JDialog implements Action {
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
-    @Override
-    public Object getValue(String key) {
-        System.out.println("Keyo " + key);
-        return null;
-    }
+    private class FormAction extends AbstractAction {
 
-    @Override
-    public void putValue(String key, Object value) {
-        System.out.println("Keyts2 " + key + ":" + value);
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String functionKey = (String) getValue(Action.NAME);
+            switch (functionKey) {
+                case "ESCAPE":
+                    jCheckBox1.setSelected(oldIsSelected);
+                    jTextArea1.setText(oldLogPath);
+                    jSpinner1.setValue(oldFileSize);
+                    dispatchEvent(new WindowEvent(LogVSettings.this, WindowEvent.WINDOW_CLOSING));
+                    break;
+                case "F2":
+                    fileChooser = new JFileChooserXeam();
+                    fileChooser.setSelectedFile(new File(jTextArea1.getText()));
+                    int returnVal = fileChooser.showOpenDialog(LogVSettings.this);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        jTextArea1.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    }
+                    break;
+                case "F3":
+                    LogVSettings.this.firePropertyChange("isLogGenerated", oldIsSelected, jCheckBox1.isSelected());
+                    try {
+                        jSpinner1.commitEdit();
+                    } catch (ParseException ex) {
+                        Logger.getLogger(LogVSettings.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    LogVSettings.this.firePropertyChange("maxSize", oldFileSize, jSpinner1.getValue());
+                    LogVSettings.this.firePropertyChange("logPath", oldLogPath, jTextArea1.getText());
+                    oldIsSelected = jCheckBox1.isSelected();
+                    oldFileSize = (int) jSpinner1.getValue();
+                    oldLogPath = jTextArea1.getText();
+                    dispatchEvent(new WindowEvent(LogVSettings.this, WindowEvent.WINDOW_CLOSING));
+                    break;
+                case "F9":
+                    jCheckBox1.setSelected(!jCheckBox1.isSelected());
+                    break;
+                case "W":
+                    System.out.println("What a...!!!");
+                    break;
+                default:
+                    System.out.println("ttt " + getValue(Action.NAME));
+                    throw new AssertionError();
+            }
+        }
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        System.out.println("e " + e.getSource());
-    }
-
 }
