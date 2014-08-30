@@ -7,6 +7,7 @@
 package com.croer.db.search.repositories;
 
 import com.croer.db.search.entities.Diccionario;
+import com.croer.db.search.repdefinition.JpaRepositoryXeam;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -14,6 +15,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author elialva
  */
-public interface DiccionarioRepository extends JpaRepository<Diccionario, String>{
+public interface DiccionarioRepository extends JpaRepositoryXeam<Diccionario, String>{
     
 }

@@ -8,12 +8,13 @@ package com.croer.db.search.repositories;
 
 import com.croer.db.search.entities.DiccionarioOrtograma;
 import com.croer.db.search.entities.DiccionarioOrtogramaPK;
+import com.croer.db.search.repdefinition.JpaRepositoryXeam;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  *
  * @author elialva
  */
-public interface DiccionarioOrtogramaRepository extends JpaRepository<DiccionarioOrtograma, DiccionarioOrtogramaPK>{
+public interface DiccionarioOrtogramaRepository extends JpaRepositoryXeam<DiccionarioOrtograma, DiccionarioOrtogramaPK>{
     
 }

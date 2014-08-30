@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.croer.db.search.entities;
 
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Itembusq.findByIdItem", query = "SELECT i FROM Itembusq i WHERE i.itembusqPK.idItem = :idItem"),
     @NamedQuery(name = "Itembusq.findByPrioridad", query = "SELECT i FROM Itembusq i WHERE i.prioridad = :prioridad")})
 public class Itembusq implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected ItembusqPK itembusqPK;
@@ -41,7 +41,7 @@ public class Itembusq implements Serializable {
     private String contexto;
     @Column(name = "prioridad")
     private Integer prioridad;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itembusq")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itembusq", orphanRemoval = true)
     private List<ItemOrtograma> itemOrtogramaList;
 
     public Itembusq() {
@@ -112,5 +112,5 @@ public class Itembusq implements Serializable {
     public String toString() {
         return "com.croer.db.search.entities.Itembusq[ itembusqPK=" + itembusqPK + " ]";
     }
-    
+
 }

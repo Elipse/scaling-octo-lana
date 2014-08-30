@@ -3,20 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.croer.db.search.repdefinition;
 
-package com.croer.db.search.repositories;
-
-import com.croer.db.search.entities.Ortograma;
-import com.croer.db.search.repdefinition.JpaRepositoryXeam;
+import java.io.Serializable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 
 /**
  *
  * @author elialva
+ * @param <T>
+ * @param <ID>
  */
-public interface OrtogramaRepository extends JpaRepositoryXeam<Ortograma, String>{
-    
-    
-    
+public interface JpaRepositoryXeam<T, ID extends Serializable> extends JpaRepository<T, ID> {
+
+    void refresh(T t);
+
 }

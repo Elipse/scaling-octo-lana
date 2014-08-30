@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-  <persistence-unit name="PUBusqueda" transaction-type="RESOURCE_LOCAL">
-    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-    <class>com.croer.db.search.entities.Simigrama</class>
-    <class>com.croer.db.search.entities.Itembusq</class>
-    <class>com.croer.db.search.entities.Alineacion</class>
-    <class>com.croer.db.search.entities.Producto</class>
-    <class>com.croer.db.search.entities.Marca</class>
-    <class>com.croer.db.search.entities.Ortograma</class>
-    <class>com.croer.db.search.entities.Busqproducto</class>
-    <class>com.croer.db.search.entities.ItemOrtograma</class>
-    <class>com.croer.db.search.entities.ProductoLog</class>
-    <class>com.croer.db.search.entities.Diccionario</class>
-    <class>com.croer.db.search.entities.DiccionarioOrtograma</class>
-    <class>com.croer.db.search.entities.Unidad</class>
-    <properties>
-      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/busqueda?zeroDateTimeBehavior=convertToNull"/>
-      <property name="javax.persistence.jdbc.password" value="root"/>
-      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
-      <property name="javax.persistence.jdbc.user" value="root"/>
-    </properties>
-  </persistence-unit>
+    <persistence-unit name="PUBusqueda" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.croer.db.search.entities.Simigrama</class>
+        <class>com.croer.db.search.entities.Itembusq</class>
+        <class>com.croer.db.search.entities.Alineacion</class>
+        <class>com.croer.db.search.entities.Producto</class>
+        <class>com.croer.db.search.entities.Marca</class>
+        <class>com.croer.db.search.entities.Ortograma</class>
+        <class>com.croer.db.search.entities.Busqproducto</class>
+        <class>com.croer.db.search.entities.ItemOrtograma</class>
+        <class>com.croer.db.search.entities.ProductoLog</class>
+        <class>com.croer.db.search.entities.Diccionario</class>
+        <class>com.croer.db.search.entities.DiccionarioOrtograma</class>
+        <class>com.croer.db.search.entities.Unidad</class>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/busqueda?zeroDateTimeBehavior=convertToNull"/>
+            <property name="javax.persistence.jdbc.password" value="root"/>
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+            <property name="javax.persistence.jdbc.user" value="root"/>
+        </properties>
+    </persistence-unit>
 </persistence>

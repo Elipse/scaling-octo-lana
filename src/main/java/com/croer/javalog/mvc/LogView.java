@@ -65,8 +65,6 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println("evtop " + evt);
-
         switch (evt.getPropertyName()) {
             case "logCount":
                 //Process statics map

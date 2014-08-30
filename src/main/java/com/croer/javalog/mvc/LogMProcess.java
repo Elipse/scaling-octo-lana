@@ -22,6 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +33,14 @@ import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import util.Utilities;
+import util.Configuration;
 
 /**
  *
@@ -44,36 +49,17 @@ import util.Utilities;
 @Component
 public class LogMProcess {
 
-    private static final Properties properties;
-    @Autowired
     private static CompositeConfiguration CONFIGURATION;
-    @Autowired
-    private static DBService dbService;
+    private static ApplicationContext CONTEXT;
 
-    @Autowired(required = true)
-    private LogMProcess(DBService dbService, CompositeConfiguration cc) {
-        LogMProcess.dbService = dbService;
-        LogMProcess.CONFIGURATION = cc;
-        System.out.println("debesos " + dbService + ":" + cc);
-    }
-
-    static {
-        String user_dir = System.getProperty("user.dir");
-        properties = new Properties();
-        try {
-            String fileProps = user_dir + "\\target\\classes\\entityStruc.properties";
-            FileInputStream input = new FileInputStream(fileProps);
-            properties.load(input);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(LogMProcess.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(LogMProcess.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public LogMProcess() {      //CREA una instancia que informa los valores estáticos
+        CONFIGURATION = Configuration.getCONFIGURATION();
+        CONTEXT = Configuration.getApplicationContext();
     }
 
     private static List<String> generatePropList(Object bean, String suffix) {
         String type = bean.getClass().getName();
-        String key = properties.getProperty(type + "." + suffix);
+        String key = CONFIGURATION.getString(type + "." + suffix);
 
         if (key == null) {
             throw new IllegalArgumentException("Missing properties for: " + type + "." + suffix);
@@ -110,7 +96,6 @@ public class LogMProcess {
     }
 
     public static Map<String, Integer> processLogs(List<JpaRepository> repoList) {
-        System.out.println("Proxx " + repoList);
         Map<String, Integer> map = new HashMap();
         for (JpaRepository name : repoList) {
             String repoName = name.toString();
@@ -122,7 +107,6 @@ public class LogMProcess {
 
     @Transactional
     private static int updateLog(JpaRepository repoName) {
-        System.out.println("reposiBBB " + repoName);
 //        if (repoName.equals("productoLogRepository")) {
 //            throw new IllegalAccessError("dedededeAAAA");
 //        }        
@@ -132,11 +116,19 @@ public class LogMProcess {
             process(object);
         }
 
-        //repository.delete(findAll); //hace el borrado de simigrama pero no de producto por ejemplo. si no procesa no puede borrar
+        repoName.delete(findAll); //hace el borrado de simigrama pero no de producto por ejemplo. si no procesa no puede borrar
         return findAll.size();
     }
 
     private static void process(Object object) {
+        //
+        String actionType = "";
+        try {
+            actionType = (String) PropertyUtils.getProperty(object, "actionType");
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+            Logger.getLogger(LogMProcess.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Acction del Log " + actionType);
         //Create Itembusq   
         Itembusq itembusq = createItembusq(object);
         String type = itembusq.getItembusqPK().getType();
@@ -145,7 +137,7 @@ public class LogMProcess {
 
         //Create Diccionario
         Diccionario d = new Diccionario(type);
-        d.setNombre(properties.getProperty("diccionario.prefijo") + type);
+        d.setNombre(CONFIGURATION.getString("diccionario.prefijo") + type);
 
         //Placeholders for the others entities
         List<ItemOrtograma> itorList = new ArrayList<>();
@@ -175,22 +167,28 @@ public class LogMProcess {
         }
 
         itembusq.setItemOrtogramaList(itorList);
-
         //Record on DB
-//        DBService sc = (DBService) appContext.getBean("DBService");
-//        sc.saveContext(itembusq, ortoList, simiList, d);
-//        DBService sc2 = (DBService) appContext.getBean("DBService");
-//        System.out.println("sc " + sc + ":" + "sc2 " + sc2);
+        DBService sc = CONTEXT.getBean(DBService.class);
+        switch (actionType) {
+            case "Delete":
+                sc.deleteContext(itembusq);
+                System.out.println("Citrus ");
+                break;
+            default:
+                sc.saveContext(itembusq, ortoList, simiList, d);
+                break;
+        }
     }
 
     public static void main(String[] args) {
 
+        LogMProcess lp = new LogMProcess();
         ProductoLog pl = new ProductoLog(13579, null);
         pl.setActionType("create");
         pl.setIdProducto(13579);
-        pl.setDescripcion("Chayote espinas");
+        pl.setDescripcion("Tetris");
         pl.setCantidad(new BigDecimal("12.30"));
         pl.setPrecio(BigDecimal.ZERO);
-//        process(pl);
+        process(pl);
     }
 }

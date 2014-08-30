@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.croer.db.search.entities;
 
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
@@ -38,7 +38,7 @@ public class ItemOrtograma implements Serializable {
     @Column(name = "frecuencia")
     private Integer frecuencia;
     @JoinColumn(name = "ortograma", referencedColumnName = "ortograma", insertable = false, updatable = false)
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private Ortograma ortograma1;
     @JoinColumns({
         @JoinColumn(name = "type", referencedColumnName = "type", insertable = false, updatable = false),
@@ -113,5 +113,5 @@ public class ItemOrtograma implements Serializable {
     public String toString() {
         return "com.croer.db.search.entities.ItemOrtograma[ itemOrtogramaPK=" + itemOrtogramaPK + " ]";
     }
-    
+
 }

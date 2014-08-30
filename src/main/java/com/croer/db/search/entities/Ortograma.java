@@ -3,15 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.croer.db.search.entities;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Ortograma.findByOrtograma", query = "SELECT o FROM Ortograma o WHERE o.ortograma = :ortograma"),
     @NamedQuery(name = "Ortograma.findByNumegrama", query = "SELECT o FROM Ortograma o WHERE o.numegrama = :numegrama")})
 public class Ortograma implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -44,7 +46,7 @@ public class Ortograma implements Serializable {
     private List<DiccionarioOrtograma> diccionarioOrtogramaList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ortograma1")
     private List<ItemOrtograma> itemOrtogramaList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ortograma1")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "ortograma1")
     private List<Alineacion> alineacionList;
 
     public Ortograma() {
@@ -126,5 +128,5 @@ public class Ortograma implements Serializable {
     public String toString() {
         return "com.croer.db.search.entities.Ortograma[ ortograma=" + ortograma + " ]";
     }
-    
+
 }

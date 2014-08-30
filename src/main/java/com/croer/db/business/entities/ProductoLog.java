@@ -88,7 +88,6 @@ public class ProductoLog implements Serializable {
     }
 
     public int getIdProducto() {
-        System.out.println("Mexico1234");
         return idProducto;
     }
 

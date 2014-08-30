@@ -32,7 +32,8 @@
         base-package="com.croer.db.search.services">
     </context:component-scan>
     
-    <jpa:repositories base-package="com.croer.db.search.repositories" />
+    <jpa:repositories base-package="com.croer.db.search.repositories" 
+                      factory-class="com.croer.db.search.repdefinition.JpaRepositoryFactoryBeanXeam"/>
     
     <tx:annotation-driven />
     
@@ -43,11 +44,16 @@
         <property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform"/>
     </bean>
     
-    <bean id="dataSourceSearch" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <bean id="dataSourceSearch" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
+        <!--bean id="dataSourceSearch" class="org.apache.commons.dbcp.BasicDataSource"-->
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
         <property name="url" value="jdbc:mysql://localhost:3306/busqueda?zeroDateTimeBehavior=convertToNull"/>
         <property name="username" value="root"/>
         <property name="password" value="root"/>
+        <property name="suppressClose" value="true"/>
+        <!--property name="maxActive" value="5"/-->
+        <!--property name="maxWait" value="1000"/-->
+        <!--property name="poolPreparedStatements" value="true"/-->
     </bean>
     
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
@@ -108,6 +114,7 @@
     
     <bean id="model" class="com.croer.javalog.mvc.LogModel">
         <constructor-arg ref="model.repositories" />
+        <constructor-arg value="${timeDelay}" />
         <!--property name="maxSize" value="${model.maxSize}" /-->
         <property name="logGenerated" value="${logGenerated}" />        
         <property name="maxSize" value="${logMaxSize}" />
@@ -127,7 +134,7 @@
     <bean id="controller" class="com.croer.javalog.mvc.LogController" init-method="init">    
     </bean>
     
-    <bean id="mProcess" class="com.croer.javalog.mvc.LogMProcess">    
+    <bean id="mProcess" class="com.croer.javalog.mvc.LogMProcess" depends-on="configuration">    
     </bean>
     
     <bean id="borriscuatro" class="com.croer.javalog.Borris4" >    
@@ -143,12 +150,18 @@
             <value>mvc.properties</value>
         </constructor-arg>
     </bean>
+    <bean id="entityStructure" class="org.apache.commons.configuration.PropertiesConfiguration">
+        <constructor-arg index="0">
+            <value>entityStruc.properties</value>
+        </constructor-arg>
+    </bean>
     
     <bean id="compositeProperties" class="org.apache.commons.configuration.CompositeConfiguration">
         <constructor-arg index="0">
             <!-- The order that these beans are defined is important when properties are defined in multiple Configurations -->
             <list>
                 <ref bean="buildProperties"/>
+                <ref bean="entityStructure"/>
             </list>
         </constructor-arg>
     </bean>

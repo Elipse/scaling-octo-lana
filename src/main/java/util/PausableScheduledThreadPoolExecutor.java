@@ -44,7 +44,6 @@ public class PausableScheduledThreadPoolExecutor extends ScheduledThreadPoolExec
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
         super.beforeExecute(t, r);
-        System.out.println("Teto " + t);
         t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 
             @Override

@@ -70,6 +70,7 @@ public class LogController {
 //        LogController logController = new LogController(model);
         LogController logController = appContext.getBean(LogController.class);
         logController.start();
+        
     }
 
     void showSettings() {

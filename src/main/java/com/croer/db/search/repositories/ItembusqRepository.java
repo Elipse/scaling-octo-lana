@@ -8,6 +8,7 @@ package com.croer.db.search.repositories;
 
 import com.croer.db.search.entities.Itembusq;
 import com.croer.db.search.entities.ItembusqPK;
+import com.croer.db.search.repdefinition.JpaRepositoryXeam;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -16,6 +17,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author elialva
  */
-public interface ItembusqRepository extends JpaRepository<Itembusq, ItembusqPK>{
+public interface ItembusqRepository extends JpaRepositoryXeam<Itembusq, ItembusqPK>{
     
 }

@@ -11,6 +11,7 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -41,7 +42,7 @@ public class Alineacion implements Serializable {
     @ManyToOne(optional = false)
     private Ortograma ortograma1;
     @JoinColumn(name = "simigrama", referencedColumnName = "simigrama", insertable = false, updatable = false)
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     private Simigrama simigrama1;
 
     public Alineacion() {

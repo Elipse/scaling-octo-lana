@@ -21,11 +21,12 @@ import com.croer.db.search.repositories.OrtogramaRepository;
 import com.croer.db.search.repositories.SimigramaRepository;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.swing.JOptionPane;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
 
 /**
  *
@@ -33,6 +34,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class DBService {
+    
+    @Autowired
+    private EntityManager entityManager;
+    
 
     @Autowired
     private AlineacionRepository alineacionRepository;
@@ -66,7 +71,13 @@ public class DBService {
 //        this.simigramaRepository = simigramaRepository;
 //
 //    }
-    
+    @Transactional
+    public void deleteContext(Itembusq itembusq) {
+        itembusqRepository.delete(itembusq);
+        itembusqRepository.flush();
+//        borraOrtograma(null, itembusq);
+    }
+
     @Transactional
     public void saveContext(Itembusq itembusq, List<Ortograma> ortoList, List<Simigrama> simiList, Diccionario diccionario) {
         List<Ortograma> ortoListOld = new ArrayList<>();
@@ -75,7 +86,12 @@ public class DBService {
             List<ItemOrtograma> tmpIO = findOne.getItemOrtogramaList();
             tmpIO.removeAll(itembusq.getItemOrtogramaList());
             for (ItemOrtograma itemOrtograma : tmpIO) {
-                ortoListOld.add(itemOrtograma.getOrtograma1());
+                Ortograma ortograma = ortogramaRepository.getOne(itemOrtograma.getItemOrtogramaPK().getOrtograma());
+                ortoListOld.add(ortograma);
+                ortogramaRepository.refresh(ortograma);
+                if (ortograma.getAlineacionList() == null || ortograma.getAlineacionList().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Sigo sin recuperar las alineaciones de " + itemOrtograma.getItemOrtogramaPK().getOrtograma());
+                }
             }
         }
 
@@ -84,6 +100,11 @@ public class DBService {
         itembusqRepository.save(itembusq);            //Da de alta los IO's borra al salvar 
         simigramaRepository.save(simiList);
         //flush
+        diccOrtoRepository.flush();
+        ortogramaRepository.flush();
+        itemOrtogramaRepository.flush();
+        simigramaRepository.flush();
+        System.out.println("Olides " + ortoListOld);
         borraOrtograma(ortoListOld, itembusq);
     }
 
@@ -94,7 +115,7 @@ public class DBService {
             System.out.println("itemOrtogramaRepository " + itemOrtogramaRepository);
             System.out.println("Ortis " + ortograma);
             List<ItemOrtograma> tmp = itemOrtogramaRepository.findByOrtogramaAndType(ortograma.getOrtograma(), tmpType);
-            if (!tmp.isEmpty()) {                                                    //* ¿Se usa para describir otros types?
+            if (!tmp.isEmpty()) {                                                    //* ¿Se usa para describir otros items del mismo type?
                 return;
             }
 
@@ -107,14 +128,19 @@ public class DBService {
 
             //Dame sus simigramas asociados (vía sus alineaciones) 
             List<Alineacion> alinList = ortograma.getAlineacionList();
+            alinList = alineacionRepository.findByOrtograma(ortograma.getOrtograma());
             List<Simigrama> simiList = new ArrayList<>();
             for (Alineacion alineacion : alinList) {
-                simiList.add(alineacion.getSimigrama1());
+                //simiList.add(alineacion.getSimigrama1());
+                Simigrama simigrama = simigramaRepository.findOne(alineacion.getAlineacionPK().getSimigrama());
+                simiList.add(simigrama);
             }
 
             //Borra las alineaciones del ortograma a borrar, y en su caso el simigrama 
+            System.out.println("HG!! " + simiList.size());
             for (Simigrama simigrama : simiList) {
                 List<Alineacion> alinListT = simigrama.getAlineacionList();
+                alinListT = alineacionRepository.findBySimigrama(simigrama.getSimigrama());
                 System.out.println("D " + simigrama.getSimigrama() + ":" + alinListT);
                 System.out.println("MemEAM " + simigrama.hashCode() + ':' + alinListT.hashCode());
 
@@ -128,8 +154,9 @@ public class DBService {
                     simigramaRepository.save(simigrama);   //* Solo conserva las alineaciones de los otros ortogramas 
                 }
             }
-
+            System.out.println("A borrar!!! " + ortograma.getOrtograma());
+            simigramaRepository.flush();
             ortogramaRepository.delete(ortograma);         //* Borra el ortograma y sus DiccOrto
         }
-    }    
+    }
 }

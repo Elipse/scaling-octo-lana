@@ -54,7 +54,7 @@ class LogModel implements PropertyChangeListener {
     private volatile FireProperty fireCount;
 
     LogModel(List<JpaRepository> repositoriesList) {
-        this(repositoriesList, 2);
+        this(repositoriesList, 1000);
     }
 
     LogModel(List<JpaRepository> repositoriesList, int delay) {
