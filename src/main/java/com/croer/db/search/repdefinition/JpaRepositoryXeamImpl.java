@@ -20,4 +20,9 @@ public class JpaRepositoryXeamImpl<T, ID extends Serializable> extends SimpleJpa
     public void refresh(T t) {
         entityManager.refresh(t);
     }
+    
+    public boolean  nomas(T t) {
+        return entityManager.contains(t);
+    }
+    
 }

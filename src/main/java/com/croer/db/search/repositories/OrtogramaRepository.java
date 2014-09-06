@@ -8,7 +8,6 @@ package com.croer.db.search.repositories;
 
 import com.croer.db.search.entities.Ortograma;
 import com.croer.db.search.repdefinition.JpaRepositoryXeam;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 
 /**
@@ -16,7 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author elialva
  */
 public interface OrtogramaRepository extends JpaRepositoryXeam<Ortograma, String>{
-    
+
     
     
 }

@@ -172,7 +172,6 @@ public class LogMProcess {
         switch (actionType) {
             case "Delete":
                 sc.deleteContext(itembusq);
-                System.out.println("Citrus ");
                 break;
             default:
                 sc.saveContext(itembusq, ortoList, simiList, d);

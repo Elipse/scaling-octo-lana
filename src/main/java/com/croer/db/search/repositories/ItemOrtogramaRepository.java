@@ -13,15 +13,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
-
 /**
  *
  * @author elialva
  */
 public interface ItemOrtogramaRepository extends JpaRepositoryXeam<ItemOrtograma, ItemOrtogramaPK> {
 
+    @Query("SELECT i FROM ItemOrtograma i WHERE i.itemOrtogramaPK.type = :type and i.itemOrtogramaPK.idItem = :idItem")
+    List<ItemOrtograma> findByTypeAndIdItem(@Param("type") String type, @Param("idItem") String idItem);
+
     @Query("SELECT i FROM ItemOrtograma i WHERE i.itemOrtogramaPK.type = :type and i.itemOrtogramaPK.ortograma = :ortograma")
     List<ItemOrtograma> findByOrtogramaAndType(@Param("ortograma") String ortograma, @Param("type") String type);
-    
+
+    @Query("SELECT i FROM ItemOrtograma i WHERE i.itemOrtogramaPK.ortograma = :ortograma")
+    List<ItemOrtograma> findByOrtograma(@Param("ortograma") String ortograma);
+
 }

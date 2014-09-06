@@ -17,5 +17,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface JpaRepositoryXeam<T, ID extends Serializable> extends JpaRepository<T, ID> {
 
     void refresh(T t);
+    boolean nomas(T t);
 
 }

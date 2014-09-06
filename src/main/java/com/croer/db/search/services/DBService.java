@@ -38,7 +38,6 @@ public class DBService {
     @Autowired
     private EntityManager entityManager;
     
-
     @Autowired
     private AlineacionRepository alineacionRepository;
     @Autowired
@@ -53,7 +52,7 @@ public class DBService {
     private DiccionarioRepository diccionarioRepository;
     @Autowired
     private DiccionarioOrtogramaRepository diccOrtoRepository;
-
+    
     public void saveDic(Diccionario diccionario) {
         diccionarioRepository.save(diccionario);
     }
@@ -73,11 +72,41 @@ public class DBService {
 //    }
     @Transactional
     public void deleteContext(Itembusq itembusq) {
+        List<String> listOrtograma = new ArrayList<>();
+        List<String> listSimigrama = new ArrayList<>();
+        
+        String type = itembusq.getItembusqPK().getType();
+        String idItem = itembusq.getItembusqPK().getIdItem();
+        List<ItemOrtograma> findByTypeAndIdItem = itemOrtogramaRepository.findByTypeAndIdItem(type, idItem);
+        for (ItemOrtograma itemOrtograma : findByTypeAndIdItem) {
+            String ortograma = itemOrtograma.getItemOrtogramaPK().getOrtograma();
+            List<ItemOrtograma> lio = itemOrtogramaRepository.findByOrtograma(ortograma);
+            if (lio.size() == 1) {
+                listOrtograma.add(ortograma);
+                List<Alineacion> findByOrtograma = alineacionRepository.findByOrtograma(ortograma);
+                for (Alineacion alineacion : findByOrtograma) {
+                    String simigrama = alineacion.getAlineacionPK().getSimigrama();
+                    List<Alineacion> lal = alineacionRepository.findBySimigrama(simigrama);
+                    if (lal.size() == 1) {
+                        listSimigrama.add(simigrama);
+                    }
+                }
+            }
+        }
+        
+        System.out.println("Itemb que se borran " + itembusq);
+        System.out.println("Ortos que se borran " + listOrtograma);
+        System.out.println("Simis que se borran " + listSimigrama);
+        
         itembusqRepository.delete(itembusq);
-        itembusqRepository.flush();
-//        borraOrtograma(null, itembusq);
+        for (String ortograma : listOrtograma) {
+            ortogramaRepository.delete(ortograma);
+        }
+        for (String simigrama : listSimigrama) {
+            simigramaRepository.delete(simigrama);
+        }
     }
-
+    
     @Transactional
     public void saveContext(Itembusq itembusq, List<Ortograma> ortoList, List<Simigrama> simiList, Diccionario diccionario) {
         List<Ortograma> ortoListOld = new ArrayList<>();
@@ -94,7 +123,7 @@ public class DBService {
                 }
             }
         }
-
+        
         diccionarioRepository.save(diccionario);
         ortogramaRepository.save(ortoList);           //Da de alta los DO's pero no borra al salvar
         itembusqRepository.save(itembusq);            //Da de alta los IO's borra al salvar 
@@ -107,7 +136,7 @@ public class DBService {
         System.out.println("Olides " + ortoListOld);
         borraOrtograma(ortoListOld, itembusq);
     }
-
+    
     @Transactional
     public void borraOrtograma(List<Ortograma> ortoList, Itembusq itembusq) {
         for (Ortograma ortograma : ortoList) {
@@ -118,11 +147,11 @@ public class DBService {
             if (!tmp.isEmpty()) {                                                    //* ¿Se usa para describir otros items del mismo type?
                 return;
             }
-
+            
             List<DiccionarioOrtograma> dol = ortograma.getDiccionarioOrtogramaList();
             dol.remove(new DiccionarioOrtograma(tmpType, ortograma.getOrtograma())); //* Borra del diccionario de Productos
-            if (dol.size() > 0) {                                                    //* ¿Se usa en otros diccionarios?  
-                ortogramaRepository.save(ortograma);                                 //* Actualiza BD
+            if (dol.size() > 0) {                                                    //* ¿Se usa en otros diccionarios?
+                Ortograma save = ortogramaRepository.save(ortograma);                //* Actualiza BD
                 return;
             }
 
@@ -143,19 +172,23 @@ public class DBService {
                 alinListT = alineacionRepository.findBySimigrama(simigrama.getSimigrama());
                 System.out.println("D " + simigrama.getSimigrama() + ":" + alinListT);
                 System.out.println("MemEAM " + simigrama.hashCode() + ':' + alinListT.hashCode());
-
+                
                 Alineacion t = new Alineacion(simigrama.getSimigrama(), ortograma.getOrtograma());
                 alinListT.remove(t);                       //* Borra las Alineacion(es) del ortograma
                 if (alinListT.isEmpty()) {
                     System.out.println("Borrando simigrama " + simigrama.getSimigrama() + ":" + alinListT);
+                    System.out.println("Beforo " + simigramaRepository.nomas(simigrama));
                     simigramaRepository.delete(simigrama); //* Borra Simigrama y todas sus Alineacion(es)
+                    System.out.println("Aftoro " + simigramaRepository.nomas(simigrama));
                 } else {
                     System.out.println("Dejando simigrama " + simigrama.getSimigrama() + ":" + alinListT);
                     simigramaRepository.save(simigrama);   //* Solo conserva las alineaciones de los otros ortogramas 
                 }
             }
             System.out.println("A borrar!!! " + ortograma.getOrtograma());
-            simigramaRepository.flush();
+//            simigramaRepository.flush();
+//            ortogramaRepository.refresh(ortograma);
+            ortograma.setAlineacionList(null);             //* No intenta propagar el DELETE
             ortogramaRepository.delete(ortograma);         //* Borra el ortograma y sus DiccOrto
         }
     }

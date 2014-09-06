@@ -6,13 +6,11 @@
 package com.croer.db.search.entities;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -46,7 +44,7 @@ public class Ortograma implements Serializable {
     private List<DiccionarioOrtograma> diccionarioOrtogramaList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "ortograma1")
     private List<ItemOrtograma> itemOrtogramaList;
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "ortograma1")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ortograma1")
     private List<Alineacion> alineacionList;
 
     public Ortograma() {
