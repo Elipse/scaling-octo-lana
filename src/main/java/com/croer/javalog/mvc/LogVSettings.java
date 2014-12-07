@@ -44,11 +44,11 @@ public class LogVSettings extends javax.swing.JDialog {
         initComponents();
         setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         //TODO Una factory & un mapa "Fn" vs "Command"
-        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "ESCAPE");
-        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F2");
-        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F3");
-        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "F9");
-        Util.activateFunctionKey(LogVSettings.this, new FormAction(), "W");
+        Util.activateFunctionKey(LogVSettings.this, new FormAction("ESCAPE"));
+        Util.activateFunctionKey(LogVSettings.this, new FormAction("F2"));
+        Util.activateFunctionKey(LogVSettings.this, new FormAction("F3"));
+        Util.activateFunctionKey(LogVSettings.this, new FormAction("F9"));
+        Util.activateFunctionKey(LogVSettings.this, new FormAction("K"));
         //
         String iconDir = CONFIGURATION.getString("icon.dir");
         jButton2.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.fileChooser")));
@@ -96,7 +96,6 @@ public class LogVSettings extends javax.swing.JDialog {
         jTextArea1.setFocusable(false);
         jScrollPane1.setViewportView(jTextArea1);
 
-        jButton2.setIcon(new ImageIcon("Documents-icon.png"));
         jButton2.setText("F2");
         jButton2.setFocusable(false);
         jButton2.setMaximumSize(new java.awt.Dimension(32, 64));
@@ -171,6 +170,10 @@ public class LogVSettings extends javax.swing.JDialog {
 
     private class FormAction extends AbstractAction {
 
+        FormAction(String name) {
+            super(name);
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             String functionKey = (String) getValue(Action.NAME);
@@ -206,7 +209,7 @@ public class LogVSettings extends javax.swing.JDialog {
                 case "F9":
                     jCheckBox1.setSelected(!jCheckBox1.isSelected());
                     break;
-                case "W":
+                case "K":
                     System.out.println("What a...!!!");
                     break;
                 default:

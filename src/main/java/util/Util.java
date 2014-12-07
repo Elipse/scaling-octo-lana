@@ -23,17 +23,17 @@ import javax.swing.KeyStroke;
  */
 public class Util {
 
-    public static void activateFunctionKey(JDialog dialog, AbstractAction formAction, String keyStroke) {
+    public static void activateFunctionKey(JDialog dialog, AbstractAction formAction) {
         JRootPane rootPane = dialog.getRootPane();
+        String keyStroke = (String) formAction.getValue(Action.NAME);
         rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(keyStroke), keyStroke);
-        formAction.putValue(Action.NAME, keyStroke);
         rootPane.getActionMap().put(keyStroke, formAction);
     }
     
-    public static void activateFunctionKey(JFrame frame, AbstractAction formAction, String keyStroke) {
+    public static void activateFunctionKey(JFrame frame, AbstractAction formAction) {
         JRootPane rootPane = frame.getRootPane();
+        String keyStroke = (String) formAction.getValue(Action.NAME);
         rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(keyStroke), keyStroke);
-        formAction.putValue(Action.NAME, keyStroke);
         rootPane.getActionMap().put(keyStroke, formAction);
     }
 }

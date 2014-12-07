@@ -24,7 +24,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.swing.JOptionPane;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

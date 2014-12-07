@@ -28,14 +28,49 @@
           http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
 ">
 
+    <!-- ¿En que paquetes busco clases que quieran ser instanciadas por Spring? -->
     <context:component-scan
         base-package="com.croer.db.search.services">
     </context:component-scan>
     
+    <!-- ¿En que paquetes trato de detectar los DAO que serán implementados? -->
     <jpa:repositories base-package="com.croer.db.search.repositories" 
                       factory-class="com.croer.db.search.repdefinition.JpaRepositoryFactoryBeanXeam"/>
-    
+
+    <!-- Manejo de transacciones con @Transactional -->
     <tx:annotation-driven />
+    
+    <!-- Levanta las properties para resolver el XML y los @Value -->
+    <context:property-placeholder
+        location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\mvc.properties,
+                  file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\tec.properties"
+        ignore-unresolvable="true"/> 
+    
+    <!-- Pone a disposición del sistema todos los parámetros vía Configuration.java -->
+    <bean id="mvc" class="org.apache.commons.configuration.PropertiesConfiguration">
+        <constructor-arg index="0">
+            <value>mvc.properties</value>
+        </constructor-arg>
+    </bean>
+    <bean id="entities" class="org.apache.commons.configuration.PropertiesConfiguration">
+        <constructor-arg index="0">
+            <value>entities.properties</value>
+        </constructor-arg>
+    </bean>    
+    <bean id="compositeProperties" class="org.apache.commons.configuration.CompositeConfiguration">
+        <constructor-arg index="0">
+            <!-- The order that these beans are defined is important when properties are defined in multiple Configurations -->
+            <list>
+                <ref bean="mvc"/>
+                <ref bean="entities"/>
+            </list>
+        </constructor-arg>
+    </bean>
+    
+    <!-- Completa los elementos estáticos de la clase -->
+    <bean id="configuration" class="util.Configuration">
+        <constructor-arg ref="compositeProperties" />
+    </bean>
     
     <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter">
         <property name="database" value="MYSQL"/>
@@ -47,9 +82,9 @@
     <bean id="dataSourceSearch" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
         <!--bean id="dataSourceSearch" class="org.apache.commons.dbcp.BasicDataSource"-->
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://localhost:3306/busqueda?zeroDateTimeBehavior=convertToNull"/>
-        <property name="username" value="root"/>
-        <property name="password" value="root"/>
+        <property name="url" value="${mysqlSearchUrl}"/>
+        <property name="username" value="${mysqlUser}"/>
+        <property name="password" value="${mysqlPass}"/>
         <property name="suppressClose" value="true"/>
         <!--property name="maxActive" value="5"/-->
         <!--property name="maxWait" value="1000"/-->
@@ -71,46 +106,17 @@
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
     
-    <!-- Configurer that replaces ${...} placeholders with values from a properties file -->
-    <!-- (in this case, JDBC-related settings for the dataSource definition below) -->
-    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <value>file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\test.properties</value>
-                <value>file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\nomas.properties</value>
-                <value>file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\mvc.properties</value>
-                <!-- List other property files here -->
-                <!-- value>mail.properties</value -->
-            </list>
-        </property>
-    </bean>
-    
-    <bean id="borristhree" class="com.croer.javalog.Borris3">
-        
-    </bean>
-    
     <!--context:property-placeholder location="classpath:name.properties" / Otra manera de hacerse de ${porp}--> 
     
-    <util:properties id="myMeche" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\meche.properties"/>
-    
-    <util:map id="myMeche.emails">
-        <entry key="pechorin" value="pechorin@hero.org"/>
-        <entry key="raskolnikov" value="raskolnikov@slums.org"/>
-        <entry key="stavrogin" value="stavrogin@gov.org"/>
-        <entry key="porfiry" value="porfiry@gov.org"/>
-    </util:map>
-    
-
-    <util:properties id="myCarmen" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\carmen.properties"/>
-    <!--util:properties id="myCarmen" location="classpath:\src\main\resources\carmen.properties"/-->
-            
-            
-            
     <!--bean id="model" class="com.croer.javalog.mvc.LogModel" init-method="init">    
         <constructor-arg value="${logPath}"/>
         <constructor-arg ref="model.repositories"/>
         <constructor-arg value="30000"/>        
     </bean-->
+    
+    <util:list id="model.repositories" value-type="org.springframework.data.jpa.repository.JpaRepository"> 
+        <ref bean = "productoLogRepository" />
+    </util:list> 
     
     <bean id="model" class="com.croer.javalog.mvc.LogModel">
         <constructor-arg ref="model.repositories" />
@@ -121,59 +127,21 @@
         <property name="logPath" value="${logPath}"/>
     </bean>
     
-    <bean id="configuration" class="util.Configuration">
-        <constructor-arg ref="compositeProperties" />
-    </bean>
-    
     <bean id="view" class="com.croer.javalog.mvc.LogView" depends-on="configuration">    
     </bean>
     
-    <bean id="viewSettings" class="com.croer.javalog.mvc.LogVSettings" depends-on="configuration">
-    </bean>
+    <!--bean id="viewSettings" class="com.croer.javalog.mvc.LogVSettings" depends-on="configuration">
+    </bean-->
     
-    <bean id="controller" class="com.croer.javalog.mvc.LogController" init-method="init">    
+    <!--bean id="controller" class="com.croer.javalog.mvc.LogController" init-method="init">    
+    </bean-->
+    
+    <bean id="controller" class="com.croer.javalog.mvc.LogController">
+        <constructor-arg ref="model" />
+        <constructor-arg ref="view" />
     </bean>
     
     <bean id="mProcess" class="com.croer.javalog.mvc.LogMProcess" depends-on="configuration">    
     </bean>
-    
-    <bean id="borriscuatro" class="com.croer.javalog.Borris4" >    
-        <property name="propUno" value="Meche"/>
-    </bean>
-    
-    
-    <!--bean id="controller1" class="com.croer.javalog.mvc.LogController" init-method="turnOnLights">    
-        <constructor-arg ref="model"/>
-    </bean--> 
-    <bean id="buildProperties" class="org.apache.commons.configuration.PropertiesConfiguration">
-        <constructor-arg index="0">
-            <value>mvc.properties</value>
-        </constructor-arg>
-    </bean>
-    <bean id="entityStructure" class="org.apache.commons.configuration.PropertiesConfiguration">
-        <constructor-arg index="0">
-            <value>entityStruc.properties</value>
-        </constructor-arg>
-    </bean>
-    
-    <bean id="compositeProperties" class="org.apache.commons.configuration.CompositeConfiguration">
-        <constructor-arg index="0">
-            <!-- The order that these beans are defined is important when properties are defined in multiple Configurations -->
-            <list>
-                <ref bean="buildProperties"/>
-                <ref bean="entityStructure"/>
-            </list>
-        </constructor-arg>
-    </bean>
-    
-    <util:properties id="databaseConfig" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\databaseConfig.properties"/>
-
-    <util:properties id="mvc" location="file:C:\Users\IBM_ADMIN\Documents\@Projects_Eli\201309 Finder&amp;Getter\_NBP\digitalcatalog\JavaLog\src\main\resources\mvc.properties"/>    
-    <bean id="configurationProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="properties" ref="mvc"/>
-    </bean>
-    <util:list id="model.repositories" value-type="org.springframework.data.jpa.repository.JpaRepository"> 
-        <ref bean = "productoLogRepository" />
-    </util:list> 
             
 </beans>

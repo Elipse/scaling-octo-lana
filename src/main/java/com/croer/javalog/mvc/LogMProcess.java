@@ -15,29 +15,19 @@ import com.croer.db.search.entities.ItemOrtograma;
 import com.croer.db.search.entities.Itembusq;
 import com.croer.db.search.entities.Ortograma;
 import com.croer.db.search.entities.Simigrama;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import util.Utilities;
 import util.Configuration;
@@ -46,15 +36,14 @@ import util.Configuration;
  *
  * @author elialva
  */
-@Component
 public class LogMProcess {
 
     private static CompositeConfiguration CONFIGURATION;
-    private static ApplicationContext CONTEXT;
+    private static DBService DBSERVICE;
 
     public LogMProcess() {      //CREA una instancia que informa los valores estáticos
         CONFIGURATION = Configuration.getCONFIGURATION();
-        CONTEXT = Configuration.getApplicationContext();
+        DBSERVICE = Configuration.getApplicationContext().getBean(DBService.class);
     }
 
     private static List<String> generatePropList(Object bean, String suffix) {
@@ -168,13 +157,13 @@ public class LogMProcess {
 
         itembusq.setItemOrtogramaList(itorList);
         //Record on DB
-        DBService sc = CONTEXT.getBean(DBService.class);
+        System.out.println("DBesos " + DBSERVICE);
         switch (actionType) {
             case "Delete":
-                sc.deleteContext(itembusq);
+                DBSERVICE.deleteContext(itembusq);
                 break;
             default:
-                sc.saveContext(itembusq, ortoList, simiList, d);
+                DBSERVICE.saveContext(itembusq, ortoList, simiList, d);
                 break;
         }
     }

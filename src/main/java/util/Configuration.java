@@ -36,7 +36,7 @@ public class Configuration implements ApplicationContextAware {
         if (CONFIGURATION == null) {
             List lc = new ArrayList();
             try {
-                PropertiesConfiguration pc1 = new PropertiesConfiguration("entityStruc.properties");
+                PropertiesConfiguration pc1 = new PropertiesConfiguration("entities.properties");
                 PropertiesConfiguration pc2 = new PropertiesConfiguration("mvc.properties");
                 lc.add(pc1);
                 lc.add(pc2);

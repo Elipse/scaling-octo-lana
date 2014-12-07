@@ -34,13 +34,11 @@ public class JpaRepositoryFactoryBeanXeam<R extends JpaRepository<T, I>, T, I ex
 
         public JpaRepositoryFactoryXeam(EntityManager entityManager) {
             super(entityManager);
-            System.out.println("Obolo2 " + entityManager);
             this.entityManager = entityManager;
         }
 
         @Override
         protected Object getTargetRepository(RepositoryMetadata metadata) {
-            System.out.println("Metis " + metadata.getDomainType());
             return new JpaRepositoryXeamImpl<>((Class<T>) metadata.getDomainType(), entityManager);
         }
 

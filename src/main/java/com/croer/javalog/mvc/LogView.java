@@ -25,15 +25,15 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
     private final CompositeConfiguration CONFIGURATION = Configuration.getCONFIGURATION();
     //
-    private LogModel model;
+//    private LogModel model;
     private LogVSettings logVSettings;
 
-    public void setModel(LogModel model) {
-        if (this.model != null) {
-            return;
-        }
-        this.model = model;
-    }
+//    public void setModel(LogModel model) {
+//        if (this.model != null) {
+//            return;
+//        }
+//        this.model = model;
+//    }
     private LogController controller;
 
     public void setController(LogController controller) {
@@ -45,10 +45,11 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         nimbus();
         initComponents();
         //
-        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "ESCAPE");
-        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F2");
-        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F3");
-        Util.activateFunctionKey(LogView.this, new LogView.FormAction(), "F9");
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction("ESCAPE"));
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction("F2"));
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction("F3"));
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction("F9"));
+        Util.activateFunctionKey(LogView.this, new LogView.FormAction("U"));
         //
         String iconDir = CONFIGURATION.getString("icon.dir");
         System.out.println("Nomep " + iconDir + CONFIGURATION.getString("icon.activate"));
@@ -56,7 +57,7 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
         jToggleButton1.setIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.deactivate")));
         jToggleButton1.setSelectedIcon(new ImageIcon(iconDir + CONFIGURATION.getString("icon.activate")));
         //
-        this.model = null;
+//        this.model = null;
         this.controller = null;
         //
         logVSettings = new LogVSettings();
@@ -226,6 +227,10 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
 
     private class FormAction extends AbstractAction {
 
+        public FormAction(String name) {
+            super(name);
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             String functionKey = (String) getValue(Action.NAME);
@@ -241,6 +246,9 @@ class LogView extends javax.swing.JFrame implements PropertyChangeListener {
                 case "F9":
                     jToggleButton1.doClick();
                     controller.toggleProcess();
+                    break;
+                case "U":
+                    System.out.println("Whay a U");
                     break;
                 default:
                     throw new AssertionError();
